@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Catch the Ball Game</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+        }
+        canvas {
+            display: block;
+            margin: auto;
+            background: #87ceeb;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas"></canvas>
+    <script>
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
+
+        // Set canvas size
+        canvas.width = 400;
+        canvas.height = 600;
+
+        // Paddle properties
+        const paddle = {
+            width: 100,
+            height: 10,
+            x: canvas.width / 2 - 50,
+            y: canvas.height - 30,
+            speed: 5,
+            dx: 0,
+        };
+
+        // Ball properties
+        const ball = {
+            x: canvas.width / 2,
+            y: canvas.height / 2,
+            radius: 10,
+            speed: 2,
+            dx: 2,
+            dy: 2,
+        };
+
+        // Handle paddle movement
+        document.addEventListener("keydown", (e) => {
+            if (e.key === "ArrowRight") paddle.dx = paddle.speed;
+            if (e.key === "ArrowLeft") paddle.dx = -paddle.speed;
+        });
+
+        document.addEventListener("keyup", () => {
+            paddle.dx = 0;
+        });
+
+        // Update paddle position
+        function movePaddle() {
+            paddle.x += paddle.dx;
+
+            // Prevent paddle from going out of bounds
+            if (paddle.x < 0) paddle.x = 0;
+            if (paddle.x + paddle.width > canvas.width) paddle.x = canvas.width - paddle.width;
+        }
+
+        // Move the ball
+        function moveBall() {
+            ball.x += ball.dx;
+            ball.y += ball.dy;
+
+            // Wall collision (left/right)
+            if (ball.x - ball.radius < 0 || ball.x + ball.radius > canvas.width) {
+                ball.dx *= -1;
+            }
+
+            // Wall collision (top)
+            if (ball.y - ball.radius < 0) {
+                ball.dy *= -1;
+            }
+
+            // Paddle collision
+            if (
+                ball.x > paddle.x &&
+                ball.x < paddle.x + paddle.width &&
+                ball.y + ball.radius > paddle.y
+            ) {
+                ball.dy *= -1;
+            }
+
+            // Ball hits bottom
+            if (ball.y - ball.radius > canvas.height) {
+                alert("Game Over!");
+                document.location.reload();
+            }
+        }
+
+        // Draw paddle
+        function drawPaddle() {
+            ctx.fillStyle = "#0095DD";
+            ctx.fillRect(paddle.x, paddle.y, paddle.width, paddle.height);
+        }
+
+        // Draw ball
+        function drawBall() {
+            ctx.beginPath();
+            ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
+            ctx.fillStyle = "#DD0095";
+            ctx.fill();
+            ctx.closePath();
+        }
+
+        // Clear canvas
+        function clearCanvas() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
+        // Game loop
+        function gameLoop() {
+            clearCanvas();
+            drawPaddle();
+            drawBall();
+            movePaddle();
+            moveBall();
+            requestAnimationFrame(gameLoop);
+        }
+
+        gameLoop();
+    </script>
+</body>
+</html>
